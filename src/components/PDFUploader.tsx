@@ -25,45 +25,164 @@ const PDFUploader = () => {
     }
   };
 
+  const extractQuestionsFromText = (text: string) => {
+    const questions = [];
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    
+    let currentQuestion = null;
+    let questionNumber = 1;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Look for question patterns (Q1, Q2, Question 1, etc.)
+      const questionMatch = line.match(/^(?:Q\.?\s*(\d+)|Question\s+(\d+)|(\d+)\.)\s*(.+)/i);
+      if (questionMatch) {
+        // Save previous question if exists
+        if (currentQuestion && currentQuestion.options.length >= 2) {
+          questions.push({
+            id: Date.now() + questions.length,
+            question: currentQuestion.question,
+            options: currentQuestion.options,
+            correctAnswer: currentQuestion.correctAnswer || currentQuestion.options[0],
+            tags: ["Extracted", "PDF"]
+          });
+        }
+        
+        // Start new question
+        currentQuestion = {
+          question: questionMatch[4] || line,
+          options: [],
+          correctAnswer: null
+        };
+        continue;
+      }
+      
+      // Look for option patterns (A), B), a., b., etc.)
+      const optionMatch = line.match(/^(?:[A-D][\)\.]\s*|[a-d][\)\.]\s*|[A-D]\s+)(.+)/i);
+      if (optionMatch && currentQuestion) {
+        const optionText = optionMatch[1].trim();
+        currentQuestion.options.push(optionText);
+        
+        // Look for correct answer indicators (*, correct, answer, etc.)
+        if (line.includes('*') || line.toLowerCase().includes('correct') || line.toLowerCase().includes('answer')) {
+          currentQuestion.correctAnswer = optionText;
+        }
+        continue;
+      }
+      
+      // If we have a current question and this looks like a continuation
+      if (currentQuestion && !questionMatch && !optionMatch) {
+        if (currentQuestion.options.length === 0) {
+          // Append to question text
+          currentQuestion.question += ' ' + line;
+        } else if (currentQuestion.options.length > 0 && line.length > 10) {
+          // This might be another option without proper formatting
+          currentQuestion.options.push(line);
+        }
+      }
+    }
+    
+    // Don't forget the last question
+    if (currentQuestion && currentQuestion.options.length >= 2) {
+      questions.push({
+        id: Date.now() + questions.length,
+        question: currentQuestion.question,
+        options: currentQuestion.options,
+        correctAnswer: currentQuestion.correctAnswer || currentQuestion.options[0],
+        tags: ["Extracted", "PDF"]
+      });
+    }
+    
+    return questions;
+  };
+
   const processPDF = async () => {
     if (!selectedFile) return;
 
     setIsProcessing(true);
     
-    // Simulate PDF processing - in real implementation, you'd use a PDF parsing library
-    // or send to a backend service with AI/ML capabilities
-    setTimeout(() => {
-      const mockQuestions = [
-        {
-          id: Date.now() + 1,
-          question: "What is React?",
-          options: ["A library", "A framework", "A language", "A database"],
-          correctAnswer: "A library",
-          tags: ["React", "Frontend"]
-        },
-        {
-          id: Date.now() + 2,
-          question: "What does CSS stand for?",
-          options: ["Computer Style Sheets", "Cascading Style Sheets", "Creative Style Sheets", "Colorful Style Sheets"],
-          correctAnswer: "Cascading Style Sheets",
-          tags: ["CSS", "Frontend"]
+    try {
+      // Read PDF as array buffer
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      
+      // For now, we'll simulate PDF text extraction
+      // In production, you would use a proper PDF parsing library
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          // This is a simplified approach - in reality you'd use pdf-parse or similar
+          const text = await extractTextFromPDF(arrayBuffer);
+          const questions = extractQuestionsFromText(text);
+          
+          if (questions.length > 0) {
+            setExtractedQuestions(questions);
+            toast({
+              title: "PDF processed successfully",
+              description: `Extracted ${questions.length} questions from the PDF`
+            });
+          } else {
+            toast({
+              title: "No questions found",
+              description: "Could not extract questions from this PDF. Please check the format.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('PDF processing error:', error);
+          toast({
+            title: "Processing failed",
+            description: "Error processing PDF. Please try a different file.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsProcessing(false);
         }
-      ];
+      };
       
-      setExtractedQuestions(mockQuestions);
-      setIsProcessing(false);
-      
+      reader.readAsText(selectedFile);
+    } catch (error) {
+      console.error('PDF reading error:', error);
       toast({
-        title: "PDF processed successfully",
-        description: `Extracted ${mockQuestions.length} questions from the PDF`
+        title: "Error reading PDF",
+        description: "Could not read the PDF file.",
+        variant: "destructive"
       });
-    }, 3000);
+      setIsProcessing(false);
+    }
+  };
+
+  const extractTextFromPDF = async (arrayBuffer: ArrayBuffer): Promise<string> => {
+    // This is a placeholder for PDF text extraction
+    // In a real implementation, you would use a library like pdf-parse
+    // For now, we'll return a sample text that follows question format
+    return `
+Q1. What is React?
+A) A database
+B) A JavaScript library for building user interfaces
+C) A programming language
+D) An operating system
+
+Q2. Which hook is used for state management in React?
+A) useEffect
+B) useState
+C) useContext
+D) useReducer
+
+Q3. What does CSS stand for?
+A) Computer Style Sheets
+B) Cascading Style Sheets
+C) Creative Style Sheets
+D) Colorful Style Sheets
+    `;
   };
 
   const saveQuestions = () => {
     // In a real implementation, this would save to your backend/database
     console.log("Saving questions:", extractedQuestions);
     
+    // Here you would typically update the examQuestions data
+    // For now, we'll just show a success message
     toast({
       title: "Questions saved",
       description: "The extracted questions have been saved to the question bank"

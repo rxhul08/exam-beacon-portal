@@ -5,22 +5,57 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { examQuestions } from "@/data/examQuestions";
+import { Question } from "@/types/exam";
+import QuestionFormDialog from "./QuestionFormDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const QuestionManager = () => {
   const [questions, setQuestions] = useState(examQuestions);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const { toast } = useToast();
 
   const deleteQuestion = (id: number) => {
-    setQuestions(questions.filter(q => q.id !== id));
+    if (window.confirm("Are you sure you want to delete this question?")) {
+      setQuestions(questions.filter(q => q.id !== id));
+      toast({
+        title: "Question deleted",
+        description: "The question has been removed from the question bank"
+      });
+    }
   };
 
-  const editQuestion = (id: number) => {
-    console.log("Edit question:", id);
-    // Implement edit functionality
+  const editQuestion = (question: Question) => {
+    setEditingQuestion(question);
+    setIsDialogOpen(true);
   };
 
   const addQuestion = () => {
-    console.log("Add new question");
-    // Implement add functionality
+    setEditingQuestion(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveQuestion = (question: Question) => {
+    if (editingQuestion) {
+      // Update existing question
+      setQuestions(questions.map(q => q.id === question.id ? question : q));
+      toast({
+        title: "Question updated",
+        description: "The question has been successfully updated"
+      });
+    } else {
+      // Add new question
+      setQuestions([...questions, question]);
+      toast({
+        title: "Question added",
+        description: "The new question has been added to the question bank"
+      });
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingQuestion(null);
   };
 
   return (
@@ -40,7 +75,7 @@ const QuestionManager = () => {
               <div className="flex justify-between items-start">
                 <CardTitle className="text-lg">Question {question.id}</CardTitle>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => editQuestion(question.id)}>
+                  <Button size="sm" variant="outline" onClick={() => editQuestion(question)}>
                     <Edit size={14} />
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => deleteQuestion(question.id)}>
@@ -78,6 +113,13 @@ const QuestionManager = () => {
           </Card>
         ))}
       </div>
+
+      <QuestionFormDialog
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+        onSave={handleSaveQuestion}
+        question={editingQuestion}
+      />
     </div>
   );
 };
