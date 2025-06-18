@@ -4,6 +4,7 @@ import QuestionSidebar from "./QuestionSidebar";
 import QuestionDisplay from "./QuestionDisplay";
 import Timer from "./Timer";
 import ScoreDisplay from "./ScoreDisplay";
+import TabSwitchGuard from "./TabSwitchGuard";
 import { examQuestions } from "@/data/examQuestions";
 import { Question, Answer } from "@/types/exam";
 
@@ -38,6 +39,11 @@ const ExamPortal = () => {
     console.log("Exam completed. Answers:", answers);
   };
 
+  // Handle tab switch violation
+  const handleTabSwitchViolation = () => {
+    handleExamComplete();
+  };
+
   // Timer effect
   useEffect(() => {
     if (timeLeft <= 0 || examCompleted) {
@@ -60,6 +66,12 @@ const ExamPortal = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Tab Switch Guard */}
+      <TabSwitchGuard 
+        isActive={!examCompleted} 
+        onViolation={handleTabSwitchViolation}
+      />
+      
       {/* Header with Timer */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
