@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 interface TabSwitchGuardProps {
@@ -9,28 +9,34 @@ interface TabSwitchGuardProps {
 
 const TabSwitchGuard = ({ isActive, onViolation }: TabSwitchGuardProps) => {
   const { toast } = useToast();
+  const warningCountRef = useRef(0);
+  const maxWarnings = 3;
 
   useEffect(() => {
     if (!isActive) return;
 
-    let warningCount = 0;
-    const maxWarnings = 3;
+    console.log("TabSwitchGuard activated");
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        warningCount++;
+        warningCountRef.current++;
+        console.log(`Tab switch detected. Warning ${warningCountRef.current}/${maxWarnings}`);
         
-        if (warningCount >= maxWarnings) {
+        if (warningCountRef.current >= maxWarnings) {
+          console.log("Maximum warnings reached. Terminating exam.");
           toast({
             title: "Exam Terminated",
             description: "You have switched tabs too many times. The exam has been automatically submitted.",
             variant: "destructive"
           });
-          onViolation?.();
+          // Call violation handler after a short delay to ensure toast is visible
+          setTimeout(() => {
+            onViolation?.();
+          }, 1000);
         } else {
           toast({
             title: "Warning!",
-            description: `Do not switch tabs during the exam. Warning ${warningCount}/${maxWarnings}`,
+            description: `Do not switch tabs during the exam. Warning ${warningCountRef.current}/${maxWarnings}`,
             variant: "destructive"
           });
         }
@@ -49,9 +55,11 @@ const TabSwitchGuard = ({ isActive, onViolation }: TabSwitchGuardProps) => {
         e.key === "F12" ||
         (e.ctrlKey && e.shiftKey && e.key === "I") ||
         (e.ctrlKey && e.key === "u") ||
-        (e.ctrlKey && e.shiftKey && e.key === "C")
+        (e.ctrlKey && e.shiftKey && e.key === "C") ||
+        (e.ctrlKey && e.shiftKey && e.key === "J")
       ) {
         e.preventDefault();
+        console.log("Blocked developer tools access attempt");
         toast({
           title: "Action Blocked",
           description: "Developer tools and view source are disabled during the exam",
@@ -62,14 +70,18 @@ const TabSwitchGuard = ({ isActive, onViolation }: TabSwitchGuardProps) => {
 
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
+      console.log("Blocked right-click context menu");
     };
 
+    // Add event listeners
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("beforeunload", handleBeforeUnload);
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("contextmenu", handleContextMenu);
 
+    // Cleanup function
     return () => {
+      console.log("TabSwitchGuard deactivated");
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("keydown", handleKeyDown);

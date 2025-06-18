@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileText, Users, BarChart3 } from "lucide-react";
-import PDFUploader from "./PDFUploader";
+import { FileText, BarChart3 } from "lucide-react";
 import CandidateResults from "./CandidateResults";
 import QuestionManager from "./QuestionManager";
 
@@ -20,7 +19,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="questions" className="flex items-center gap-2">
               <FileText size={16} />
               Question Management
@@ -28,10 +27,6 @@ const AdminDashboard = () => {
             <TabsTrigger value="results" className="flex items-center gap-2">
               <BarChart3 size={16} />
               Candidate Results
-            </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center gap-2">
-              <Upload size={16} />
-              PDF Upload
             </TabsTrigger>
           </TabsList>
 
@@ -41,10 +36,6 @@ const AdminDashboard = () => {
 
           <TabsContent value="results">
             <CandidateResults />
-          </TabsContent>
-
-          <TabsContent value="upload">
-            <PDFUploader />
           </TabsContent>
         </Tabs>
       </div>

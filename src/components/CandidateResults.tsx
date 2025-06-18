@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Download, Mail } from "lucide-react";
+import { Eye, Download } from "lucide-react";
 import { mockCandidateResults } from "@/data/mockResults";
+import { examQuestions } from "@/data/examQuestions";
 
 const CandidateResults = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
@@ -25,9 +26,22 @@ const CandidateResults = () => {
     // Implement PDF generation logic here
   };
 
-  const sendEmail = (candidate: any) => {
-    console.log("Sending email to:", candidate.email);
-    // Implement email sending logic here
+  // Generate complete question analysis for the selected candidate
+  const generateQuestionAnalysis = (candidate: any) => {
+    return examQuestions.map((question) => {
+      // Find if this question was answered by the candidate
+      const candidateAnswer = candidate.answers?.find((answer: any) => answer.questionId === question.id);
+      
+      return {
+        questionId: question.id,
+        question: question.question,
+        options: question.options,
+        correctAnswer: question.correctAnswer,
+        selectedAnswer: candidateAnswer?.selectedAnswer || "Not Answered",
+        isCorrect: candidateAnswer ? candidateAnswer.selectedAnswer === question.correctAnswer : false,
+        wasAnswered: !!candidateAnswer
+      };
+    });
   };
 
   return (
@@ -81,13 +95,6 @@ const CandidateResults = () => {
                         >
                           <Download size={14} />
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => sendEmail(candidate)}
-                        >
-                          <Mail size={14} />
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -138,29 +145,62 @@ const CandidateResults = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Question-wise Analysis</CardTitle>
+              <CardTitle>Complete Question Analysis</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {selectedCandidate.answers.map((answer: any, index: number) => (
-                  <div key={index} className="p-4 border rounded-lg">
+                {generateQuestionAnalysis(selectedCandidate).map((analysis, index) => (
+                  <div key={analysis.questionId} className="p-4 border rounded-lg">
                     <div className="flex justify-between items-start mb-2">
-                      <div className="font-medium">Question {answer.questionId}</div>
-                      <Badge className={answer.isCorrect ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                        {answer.isCorrect ? "Correct" : "Incorrect"}
+                      <div className="font-medium">Question {analysis.questionId}</div>
+                      <Badge className={
+                        !analysis.wasAnswered 
+                          ? "bg-gray-100 text-gray-800" 
+                          : analysis.isCorrect 
+                            ? "bg-green-100 text-green-800" 
+                            : "bg-red-100 text-red-800"
+                      }>
+                        {!analysis.wasAnswered ? "Not Answered" : analysis.isCorrect ? "Correct" : "Incorrect"}
                       </Badge>
                     </div>
-                    <div className="text-gray-700 mb-2">{answer.question}</div>
+                    <div className="text-gray-700 mb-3">{analysis.question}</div>
+                    
+                    <div className="space-y-2 mb-3">
+                      {analysis.options.map((option, optIndex) => (
+                        <div 
+                          key={optIndex} 
+                          className={`p-2 rounded text-sm ${
+                            option === analysis.correctAnswer 
+                              ? 'bg-green-50 border border-green-200 text-green-800' 
+                              : option === analysis.selectedAnswer && analysis.selectedAnswer !== analysis.correctAnswer
+                                ? 'bg-red-50 border border-red-200 text-red-800'
+                                : 'bg-gray-50'
+                          }`}
+                        >
+                          {String.fromCharCode(65 + optIndex)}. {option}
+                          {option === analysis.correctAnswer && ' ✓ (Correct Answer)'}
+                          {option === analysis.selectedAnswer && analysis.selectedAnswer !== analysis.correctAnswer && ' ✗ (Selected)'}
+                          {option === analysis.selectedAnswer && analysis.selectedAnswer === analysis.correctAnswer && ' ✓ (Selected - Correct)'}
+                        </div>
+                      ))}
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="font-medium">Selected: </span>
-                        <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
-                          {answer.selectedAnswer}
+                        <span className="font-medium">Selected Answer: </span>
+                        <span className={
+                          !analysis.wasAnswered 
+                            ? "text-gray-600" 
+                            : analysis.isCorrect 
+                              ? "text-green-600" 
+                              : "text-red-600"
+                        }>
+                          {analysis.selectedAnswer}
                         </span>
                       </div>
                       <div>
-                        <span className="font-medium">Correct: </span>
-                        <span className="text-green-600">{answer.correctAnswer}</span>
+                        <span className="font-medium">Correct Answer: </span>
+                        <span className="text-green-600">{analysis.correctAnswer}</span>
                       </div>
                     </div>
                   </div>

@@ -11,19 +11,30 @@ export const mockCandidateResults = [
     answers: [
       {
         questionId: 1,
-        question: "What is the primary purpose of React hooks?",
-        selectedAnswer: "To manage component lifecycle in functional components",
-        correctAnswer: "To manage component lifecycle in functional components",
+        selectedAnswer: "A JavaScript library for building user interfaces",
         isCorrect: true
       },
       {
         questionId: 2,
-        question: "Which HTTP status code indicates a successful request?",
         selectedAnswer: "404",
-        correctAnswer: "200",
         isCorrect: false
+      },
+      {
+        questionId: 3,
+        selectedAnswer: "useState",
+        isCorrect: true
+      },
+      {
+        questionId: 4,
+        selectedAnswer: "Cascading Style Sheets",
+        isCorrect: true
+      },
+      {
+        questionId: 5,
+        selectedAnswer: "Document Object Model",
+        isCorrect: true
       }
-      // Add more answers as needed
+      // Note: Only answered first 5 questions for demo, rest will show as "Not Answered"
     ]
   },
   {
@@ -34,7 +45,33 @@ export const mockCandidateResults = [
     percentage: 60,
     grade: "C",
     completedAt: "2024-01-14T14:20:00Z",
-    answers: []
+    answers: [
+      {
+        questionId: 1,
+        selectedAnswer: "A programming language",
+        isCorrect: false
+      },
+      {
+        questionId: 2,
+        selectedAnswer: "200",
+        isCorrect: true
+      },
+      {
+        questionId: 3,
+        selectedAnswer: "useEffect",
+        isCorrect: false
+      },
+      {
+        questionId: 4,
+        selectedAnswer: "Computer Style Sheets",
+        isCorrect: false
+      },
+      {
+        questionId: 5,
+        selectedAnswer: "Document Object Model",
+        isCorrect: true
+      }
+    ]
   },
   {
     id: 3,
@@ -44,6 +81,32 @@ export const mockCandidateResults = [
     percentage: 90,
     grade: "A+",
     completedAt: "2024-01-13T09:15:00Z",
-    answers: []
+    answers: [
+      {
+        questionId: 1,
+        selectedAnswer: "A JavaScript library for building user interfaces",
+        isCorrect: true
+      },
+      {
+        questionId: 2,
+        selectedAnswer: "200",
+        isCorrect: true
+      },
+      {
+        questionId: 3,
+        selectedAnswer: "useState",
+        isCorrect: true
+      },
+      {
+        questionId: 4,
+        selectedAnswer: "Cascading Style Sheets",
+        isCorrect: true
+      },
+      {
+        questionId: 5,
+        selectedAnswer: "Document Object Model",
+        isCorrect: true
+      }
+    ]
   }
 ];
