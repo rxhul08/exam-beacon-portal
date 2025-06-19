@@ -1,15 +1,27 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Download } from "lucide-react";
-import { mockCandidateResults } from "@/data/mockResults";
 import { examQuestions } from "@/data/examQuestions";
 
 const CandidateResults = () => {
+  const [results, setResults] = useState<any[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+
+  // Load results from localStorage
+  useEffect(() => {
+    const savedResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    setResults(savedResults);
+  }, []);
+
+  // Refresh results when component mounts or when coming back from detail view
+  const refreshResults = () => {
+    const savedResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    setResults(savedResults);
+  };
 
   const getScoreColor = (percentage: number) => {
     if (percentage >= 80) return "bg-green-100 text-green-800";
@@ -24,6 +36,12 @@ const CandidateResults = () => {
   const downloadReport = (candidate: any) => {
     console.log("Downloading report for:", candidate.email);
     // Implement PDF generation logic here
+  };
+
+  const clearAllResults = () => {
+    localStorage.removeItem('examResults');
+    setResults([]);
+    setSelectedCandidate(null);
   };
 
   // Generate complete question analysis for the selected candidate
@@ -49,65 +67,87 @@ const CandidateResults = () => {
       {!selectedCandidate ? (
         <Card>
           <CardHeader>
-            <CardTitle>Candidate Results Overview</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Candidate Results Overview</CardTitle>
+              {results.length > 0 && (
+                <Button variant="outline" onClick={clearAllResults} className="text-red-600">
+                  Clear All Results
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Candidate Email</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Percentage</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Completed At</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockCandidateResults.map((candidate) => (
-                  <TableRow key={candidate.id}>
-                    <TableCell className="font-medium">{candidate.email}</TableCell>
-                    <TableCell>{candidate.score}/{candidate.totalQuestions}</TableCell>
-                    <TableCell>
-                      <Badge className={getScoreColor(candidate.percentage)}>
-                        {candidate.percentage}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getScoreColor(candidate.percentage)}>
-                        {candidate.grade}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{new Date(candidate.completedAt).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => viewDetails(candidate)}
-                        >
-                          <Eye size={14} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => downloadReport(candidate)}
-                        >
-                          <Download size={14} />
-                        </Button>
-                      </div>
-                    </TableCell>
+            {results.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No exam results available yet.</p>
+                <p className="text-sm text-gray-400 mt-2">Results will appear here after candidates complete their exams.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Candidate Email</TableHead>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Percentage</TableHead>
+                    <TableHead>Grade</TableHead>
+                    <TableHead>Completed At</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {results.map((candidate) => (
+                    <TableRow key={candidate.id}>
+                      <TableCell className="font-medium">{candidate.email}</TableCell>
+                      <TableCell>{candidate.department}</TableCell>
+                      <TableCell>{candidate.score}/{candidate.totalQuestions}</TableCell>
+                      <TableCell>
+                        <Badge className={getScoreColor(candidate.percentage)}>
+                          {candidate.percentage}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getScoreColor(candidate.percentage)}>
+                          {candidate.grade}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{new Date(candidate.completedAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => viewDetails(candidate)}
+                          >
+                            <Eye size={14} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => downloadReport(candidate)}
+                          >
+                            <Download size={14} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Detailed Results for {selectedCandidate.email}</h2>
-            <Button variant="outline" onClick={() => setSelectedCandidate(null)}>
+            <div>
+              <h2 className="text-2xl font-bold">Detailed Results for {selectedCandidate.email}</h2>
+              <p className="text-gray-600">Department: {selectedCandidate.department}</p>
+            </div>
+            <Button variant="outline" onClick={() => {
+              setSelectedCandidate(null);
+              refreshResults();
+            }}>
               Back to Overview
             </Button>
           </div>
