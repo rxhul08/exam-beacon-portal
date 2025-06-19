@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 
 interface CandidateInfo {
   email: string;
@@ -52,33 +51,39 @@ const CandidateRegistration = ({ onRegistrationComplete }: CandidateRegistration
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <FormItem>
-              <FormLabel>Work Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="your.email@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={errors.email ? "border-red-500" : ""}
-                />
-              </FormControl>
-              {errors.email && <FormMessage>{errors.email}</FormMessage>}
-            </FormItem>
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Work Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your.email@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={errors.email ? "border-red-500" : ""}
+              />
+              {errors.email && (
+                <p className="text-sm font-medium text-red-600">{errors.email}</p>
+              )}
+            </div>
 
-            <FormItem>
-              <FormLabel>Department</FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  placeholder="e.g., Engineering, Marketing, Sales"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className={errors.department ? "border-red-500" : ""}
-                />
-              </FormControl>
-              {errors.department && <FormMessage>{errors.department}</FormMessage>}
-            </FormItem>
+            <div className="space-y-2">
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                Department
+              </label>
+              <Input
+                id="department"
+                type="text"
+                placeholder="e.g., Engineering, Marketing, Sales"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className={errors.department ? "border-red-500" : ""}
+              />
+              {errors.department && (
+                <p className="text-sm font-medium text-red-600">{errors.department}</p>
+              )}
+            </div>
 
             <Button type="submit" className="w-full">
               Start Examination
