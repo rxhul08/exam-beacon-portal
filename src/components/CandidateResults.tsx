@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Download } from "lucide-react";
+import { Eye, Download, RefreshCw } from "lucide-react";
 import { examQuestions } from "@/data/examQuestions";
 
 const CandidateResults = () => {
@@ -12,15 +12,19 @@ const CandidateResults = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
 
   // Load results from localStorage
-  useEffect(() => {
+  const loadResults = () => {
     const savedResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    console.log("Loading results from localStorage:", savedResults);
     setResults(savedResults);
+  };
+
+  useEffect(() => {
+    loadResults();
   }, []);
 
-  // Refresh results when component mounts or when coming back from detail view
+  // Refresh results manually
   const refreshResults = () => {
-    const savedResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-    setResults(savedResults);
+    loadResults();
   };
 
   const getScoreColor = (percentage: number) => {
@@ -68,12 +72,23 @@ const CandidateResults = () => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Candidate Results Overview</CardTitle>
-              {results.length > 0 && (
-                <Button variant="outline" onClick={clearAllResults} className="text-red-600">
-                  Clear All Results
+              <div>
+                <CardTitle>Candidate Results Overview</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Total Results: {results.length}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={refreshResults} className="flex items-center gap-2">
+                  <RefreshCw size={16} />
+                  Refresh
                 </Button>
-              )}
+                {results.length > 0 && (
+                  <Button variant="outline" onClick={clearAllResults} className="text-red-600">
+                    Clear All Results
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -81,59 +96,71 @@ const CandidateResults = () => {
               <div className="text-center py-8">
                 <p className="text-gray-500">No exam results available yet.</p>
                 <p className="text-sm text-gray-400 mt-2">Results will appear here after candidates complete their exams.</p>
+                <Button onClick={refreshResults} className="mt-4">
+                  Check for New Results
+                </Button>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Candidate Email</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Percentage</TableHead>
-                    <TableHead>Grade</TableHead>
-                    <TableHead>Completed At</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {results.map((candidate) => (
-                    <TableRow key={candidate.id}>
-                      <TableCell className="font-medium">{candidate.email}</TableCell>
-                      <TableCell>{candidate.department}</TableCell>
-                      <TableCell>{candidate.score}/{candidate.totalQuestions}</TableCell>
-                      <TableCell>
-                        <Badge className={getScoreColor(candidate.percentage)}>
-                          {candidate.percentage}%
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getScoreColor(candidate.percentage)}>
-                          {candidate.grade}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{new Date(candidate.completedAt).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => viewDetails(candidate)}
-                          >
-                            <Eye size={14} />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => downloadReport(candidate)}
-                          >
-                            <Download size={14} />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  Debug Info: Found {results.length} result(s) in localStorage
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Candidate Email</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Score</TableHead>
+                      <TableHead>Percentage</TableHead>
+                      <TableHead>Grade</TableHead>
+                      <TableHead>Completed At</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {results.map((candidate, index) => (
+                      <TableRow key={candidate.id || index}>
+                        <TableCell className="font-medium">
+                          {candidate.email || 'N/A'}
+                        </TableCell>
+                        <TableCell>{candidate.department || 'N/A'}</TableCell>
+                        <TableCell>{candidate.score || 0}/{candidate.totalQuestions || 0}</TableCell>
+                        <TableCell>
+                          <Badge className={getScoreColor(candidate.percentage || 0)}>
+                            {candidate.percentage || 0}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getScoreColor(candidate.percentage || 0)}>
+                            {candidate.grade || 'F'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {candidate.completedAt ? new Date(candidate.completedAt).toLocaleDateString() : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => viewDetails(candidate)}
+                            >
+                              <Eye size={14} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadReport(candidate)}
+                            >
+                              <Download size={14} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>

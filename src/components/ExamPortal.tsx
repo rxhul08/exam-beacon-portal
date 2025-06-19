@@ -23,8 +23,8 @@ const ExamPortal = () => {
 
   // Handle candidate registration
   const handleRegistrationComplete = (info: CandidateInfo) => {
+    console.log("Candidate registration completed:", info);
     setCandidateInfo(info);
-    console.log("Candidate registered:", info);
   };
 
   // Handle answer selection
@@ -74,11 +74,13 @@ const ExamPortal = () => {
     existingResults.push(newResult);
     localStorage.setItem('examResults', JSON.stringify(existingResults));
     
-    console.log("Exam completed. Results saved:", newResult);
+    console.log("Exam completed. Results saved to localStorage:", newResult);
+    console.log("Total results in localStorage:", existingResults.length);
   };
 
   // Handle tab switch violation
   const handleTabSwitchViolation = () => {
+    console.log("Tab switch violation - completing exam");
     handleExamComplete();
   };
 
@@ -86,6 +88,7 @@ const ExamPortal = () => {
   useEffect(() => {
     if (!candidateInfo || timeLeft <= 0 || examCompleted) {
       if (!examCompleted && candidateInfo && timeLeft <= 0) {
+        console.log("Time up - completing exam");
         handleExamComplete();
       }
       return;
