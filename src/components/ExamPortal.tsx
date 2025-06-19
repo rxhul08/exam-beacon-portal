@@ -14,12 +14,38 @@ interface CandidateInfo {
   department: string;
 }
 
+// Fisher-Yates shuffle algorithm
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const ExamPortal = () => {
   const [candidateInfo, setCandidateInfo] = useState<CandidateInfo | null>(null);
+  const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<number>(1);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [timeLeft, setTimeLeft] = useState<number>(30 * 60); // 30 minutes in seconds
   const [examCompleted, setExamCompleted] = useState<boolean>(false);
+
+  // Shuffle questions when candidate info is set
+  useEffect(() => {
+    if (candidateInfo && shuffledQuestions.length === 0) {
+      const shuffled = shuffleArray(examQuestions);
+      // Re-assign IDs to maintain order for navigation
+      const reIndexedQuestions = shuffled.map((question, index) => ({
+        ...question,
+        id: index + 1,
+        originalId: question.id // Keep original ID for reference
+      }));
+      setShuffledQuestions(reIndexedQuestions);
+      console.log("Questions shuffled for candidate:", candidateInfo.email);
+    }
+  }, [candidateInfo, shuffledQuestions.length]);
 
   // Handle candidate registration
   const handleRegistrationComplete = (info: CandidateInfo) => {
@@ -29,7 +55,7 @@ const ExamPortal = () => {
 
   // Handle answer selection
   const handleAnswerSelect = (questionNumber: number, selectedOption: string) => {
-    const question = examQuestions.find(q => q.id === questionNumber);
+    const question = shuffledQuestions.find(q => q.id === questionNumber);
     if (!question) return;
 
     const newAnswer: Answer = {
@@ -51,7 +77,7 @@ const ExamPortal = () => {
     
     // Calculate score
     const score = Object.values(answers).filter(answer => answer.isCorrect).length;
-    const percentage = Math.round((score / examQuestions.length) * 100);
+    const percentage = Math.round((score / shuffledQuestions.length) * 100);
     
     // Store results in localStorage for admin to view
     const existingResults = JSON.parse(localStorage.getItem('examResults') || '[]');
@@ -60,7 +86,7 @@ const ExamPortal = () => {
       email: candidateInfo?.email || 'unknown@company.com',
       department: candidateInfo?.department || 'Unknown',
       score,
-      totalQuestions: examQuestions.length,
+      totalQuestions: shuffledQuestions.length,
       percentage,
       grade: percentage >= 90 ? 'A+' : percentage >= 80 ? 'A' : percentage >= 70 ? 'B' : percentage >= 60 ? 'C' : percentage >= 50 ? 'D' : 'F',
       completedAt: new Date().toISOString(),
@@ -107,11 +133,23 @@ const ExamPortal = () => {
   }
 
   if (examCompleted) {
-    return <ScoreDisplay answers={answers} questions={examQuestions} />;
+    return <ScoreDisplay answers={answers} questions={shuffledQuestions} />;
+  }
+
+  // Wait for questions to be shuffled
+  if (shuffledQuestions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Preparing your examination...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Tab Switch Guard */}
       <TabSwitchGuard 
         isActive={!examCompleted} 
@@ -119,11 +157,16 @@ const ExamPortal = () => {
       />
       
       {/* Header with Timer */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-lg border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Internal Examination Portal</h1>
-            <p className="text-sm text-gray-600">Candidate: {candidateInfo.email} | Department: {candidateInfo.department}</p>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Internal Examination Portal
+            </h1>
+            <p className="text-sm text-gray-600">
+              Candidate: <span className="font-medium text-blue-600">{candidateInfo.email}</span> | 
+              Department: <span className="font-medium text-blue-600">{candidateInfo.department}</span>
+            </p>
           </div>
           <Timer timeLeft={timeLeft} />
         </div>
@@ -135,7 +178,7 @@ const ExamPortal = () => {
           {/* Question Sidebar */}
           <div className="lg:col-span-1">
             <QuestionSidebar
-              questions={examQuestions}
+              questions={shuffledQuestions}
               currentQuestion={currentQuestion}
               answers={answers}
               onQuestionSelect={setCurrentQuestion}
@@ -145,11 +188,11 @@ const ExamPortal = () => {
           {/* Question Display */}
           <div className="lg:col-span-3">
             <QuestionDisplay
-              question={examQuestions.find(q => q.id === currentQuestion)}
+              question={shuffledQuestions.find(q => q.id === currentQuestion)}
               selectedAnswer={answers[currentQuestion]?.selectedOption}
               onAnswerSelect={(option) => handleAnswerSelect(currentQuestion, option)}
               onNext={() => {
-                if (currentQuestion < examQuestions.length) {
+                if (currentQuestion < shuffledQuestions.length) {
                   setCurrentQuestion(currentQuestion + 1);
                 }
               }}
@@ -159,7 +202,7 @@ const ExamPortal = () => {
                 }
               }}
               onSubmit={handleExamComplete}
-              isLastQuestion={currentQuestion === examQuestions.length}
+              isLastQuestion={currentQuestion === shuffledQuestions.length}
             />
           </div>
         </div>
