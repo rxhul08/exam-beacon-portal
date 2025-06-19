@@ -51,7 +51,7 @@ const CandidateRegistration = ({ onRegistrationComplete }: CandidateRegistration
           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
             <User className="w-8 h-8 text-blue-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-800">Welcome to Examination Portal</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800">PowerBI Examination Portal</CardTitle>
           <p className="text-gray-600 mt-2">Please enter your details to begin</p>
         </CardHeader>
         <CardContent className="pt-4">

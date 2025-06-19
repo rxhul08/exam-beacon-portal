@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Download, RefreshCw } from "lucide-react";
+import { Eye, RefreshCw } from "lucide-react";
 import { examQuestions } from "@/data/examQuestions";
 
 const CandidateResults = () => {
@@ -35,11 +34,6 @@ const CandidateResults = () => {
 
   const viewDetails = (candidate: any) => {
     setSelectedCandidate(candidate);
-  };
-
-  const downloadReport = (candidate: any) => {
-    console.log("Downloading report for:", candidate.email);
-    // Implement PDF generation logic here
   };
 
   const clearAllResults = () => {
@@ -139,22 +133,13 @@ const CandidateResults = () => {
                           {candidate.completedAt ? new Date(candidate.completedAt).toLocaleDateString() : 'N/A'}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => viewDetails(candidate)}
-                            >
-                              <Eye size={14} />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => downloadReport(candidate)}
-                            >
-                              <Download size={14} />
-                            </Button>
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => viewDetails(candidate)}
+                          >
+                            <Eye size={14} />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
