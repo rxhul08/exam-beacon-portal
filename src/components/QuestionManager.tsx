@@ -59,11 +59,11 @@ const QuestionManager = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Question Bank Management</h2>
-        <Button onClick={addQuestion} className="bg-blue-600 hover:bg-blue-700">
-          <Plus size={16} className="mr-2" />
+        <h2 className="text-2xl font-bold text-gray-800">Question Bank Management</h2>
+        <Button onClick={addQuestion} className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2">
+          <Plus size={16} />
           Add Question
         </Button>
       </div>

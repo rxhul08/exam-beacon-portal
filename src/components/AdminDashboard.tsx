@@ -47,17 +47,17 @@ const AdminDashboard = () => {
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex justify-center">
-            <TabsList className="grid grid-cols-2 bg-white/80 backdrop-blur-sm shadow-lg border border-blue-100 p-1 rounded-xl">
+            <TabsList className="grid grid-cols-2 bg-white/80 backdrop-blur-sm shadow-lg border border-blue-100 p-1 rounded-xl max-w-md">
               <TabsTrigger 
                 value="questions" 
-                className="flex items-center gap-2 px-6 py-3 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all duration-200"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all duration-200"
               >
                 <FileText size={16} />
                 Question Management
               </TabsTrigger>
               <TabsTrigger 
                 value="results" 
-                className="flex items-center gap-2 px-6 py-3 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all duration-200"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all duration-200"
               >
                 <BarChart3 size={16} />
                 Candidate Results
